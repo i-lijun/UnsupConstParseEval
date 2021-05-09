@@ -136,13 +136,23 @@ class Sentence:
                     for child in node:
                         nodeList.append(child)
 
+    def is_ktb_null_element(self, sub):
+        """Check if a subtree is a null element in KTB.
+        """
+        if self.data_type != "ktb":
+            return False
+        if len(sub.pos()) != 1:
+            return False
+        text = sub.pos()[0][0]
+        return text.startswith("*") and text.endswith("*")
+
     def remove_nodes(self, tags_to_remove):
         '''Remove nodes with certain tags specified in `tags_to_remove`,
            Note: if the tag of a subtree is in `tags_to_remove`, 
                the whole subtree will be removed
         '''
         for sub in reversed(list(self.tree.subtrees())):
-            if sub.label() in tags_to_remove:
+            if sub.label() in tags_to_remove or self.is_ktb_null_element(sub):
                 position = sub.treeposition()
                 if not position:
                     continue
@@ -183,6 +193,7 @@ class Sentence:
             raise ValueError(
                 'Unexpected type of sentence: {}'.format(type(raw)))
 
+        self.data_type = punct_type
         self.punct_set = self.punct_table[punct_type]
 
         # remove null elements and ID
@@ -193,6 +204,7 @@ class Sentence:
         except IndexError as e:
             # print("The whole tree is deleted:")
             # print(repr(raw))
+            self.tree = None
             pass
 
         # clean terminals and nonterminals
@@ -204,7 +216,7 @@ class Sentence:
             self.tree = nltk.ParentedTree.fromstring(
                 str(self.tree), remove_empty_top_bracketing=True)
 
-        if len(self) == 0:
+        if self.tree is None or len(self) == 0:
             self.tree = None
 
     @property
@@ -381,7 +393,7 @@ class KTBHelper:
                             print(e)
                             print(filepath)
                             print(repr(cur_str))
-                            continue
+                            exit(0)
                         yield sent
                         cur_str = ""
                     else:
@@ -438,6 +450,7 @@ def parse_args():
 def preprocess_ptb(args):
     if args.path_to_raw_ptb is None or not os.path.exists(args.path_to_raw_ptb):
         print("No PTB data found, do nothing")
+        return
     ptb_helper = PTBHelper(args.path_to_raw_ptb)
     print("Processing for the setting: ptb_len10_nopunct")
     ptb_helper.process_dataset(
@@ -453,6 +466,7 @@ def preprocess_ptb(args):
 def preprocess_ktb(args):
     if args.path_to_raw_ktb is None or not os.path.exists(args.path_to_raw_ktb):
         print("No KTB data found, do nothing")
+        return
     ktb_helper = KTBHelper(args.path_to_raw_ktb)
     print("Processing for the setting: ktb_len10_nopunct")
     ktb_helper.process_dataset(
