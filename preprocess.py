@@ -85,7 +85,7 @@ class Sentence:
 
     punct_table = {
         "ptb": {",", ".", ":", "``", "''", "-LRB-", "-RRB-", "#", "LS", "LST", "SYM"},
-        "ktb": {"PU", "-LRB-", "-RRB-", "LS", "LST", "META", "CODE"}
+        "ktb": {"PU", "-LRB-", "-RRB-", "LS", "LST", "META", "CODE", "QUOT"}
     }
 
     @classmethod
