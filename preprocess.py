@@ -144,7 +144,7 @@ class Sentence:
         if len(sub.pos()) != 1:
             return False
         text = sub.pos()[0][0]
-        return text.startswith("*") and text.endswith("*")
+        return text.startswith("*") and (text.endswith("*") or text.endswith("-1"))
 
     def remove_nodes(self, tags_to_remove):
         '''Remove nodes with certain tags specified in `tags_to_remove`,
